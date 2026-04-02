@@ -3,6 +3,7 @@ import os
 import subprocess
 import time
 import requests
+import re
 from datetime import datetime
 
 # --- КОНФИГУРАЦИЯ ---
@@ -23,14 +24,22 @@ def mark_as_published(url):
     with open(DB_FILE, "a") as f:
         f.write(url + "\n")
 
+def clean_content(text):
+    """Удаляет мусорные фразы ИИ и лишнее форматирование"""
+    # Убираем [Empty line], [blank line] и прочее
+    text = re.sub(r'\[.*?line\]|\[insert.*?\]', '', text, flags=re.IGNORECASE)
+    # Убираем жирные звездочки и решетки
+    text = text.replace("**", "").replace("##", "")
+    return text.strip()
+
 def ask_ai(title, summary):
     prompt = (
-        f"Act as a pro tech blogger. Rewrite this news for a global audience.\n"
-        f"Strict Format:\n"
-        f"Line 1: High-quality SEO Title\n"
-        f"Line 2: One specific English keyword for image search (e.g. 'smartphone', 'ai', 'tesla')\n"
-        f"Line 3: [Empty line]\n"
-        f"Line 4+: Article body (3-4 paragraphs)\n\n"
+        f"Rewrite this tech news for a professional website.\n"
+        f"STRICT FORMAT:\n"
+        f"Line 1: Catchy Title (plain text only)\n"
+        f"Line 2: One specific English word for image search (e.g. 'ai', 'gadget', 'space')\n"
+        f"Line 3: [Blank]\n"
+        f"Line 4+: Article text (3-4 paragraphs)\n\n"
         f"Original Title: {title}\nSummary: {summary}"
     )
     try:
@@ -44,7 +53,8 @@ def ask_ai(title, summary):
         return None
 
 def download_image(keyword, filename):
-    url = f"https://loremflickr.com/1200/630/{keyword},tech/all"
+    # Добавляем 'tech' к поиску для точности
+    url = f"https://loremflickr.com/1200/800/{keyword},technology/all"
     try:
         response = requests.get(url, timeout=30)
         if response.status_code == 200:
@@ -52,11 +62,11 @@ def download_image(keyword, filename):
                 f.write(response.content)
             return True
     except Exception as e:
-        print(f"❌ Download Error: {e}")
+        print(f"❌ Image Error: {e}")
     return False
 
 def run_bot():
-    print("--- 🚀 Starting High-Quality Content Bot ---")
+    print("--- 🚀 Starting Super Clean Bot ---")
     feed = feedparser.parse(RSS_URL)
     
     for entry in feed.entries[:5]:
@@ -64,36 +74,44 @@ def run_bot():
 
         print(f"📝 Processing: {entry.title}")
         ai_response = ask_ai(entry.title, entry.summary)
-        if not ai_response or len(ai_response) < 150: continue
+        if not ai_response or len(ai_response) < 100: continue
 
         lines = ai_response.split('\n')
-        ai_title = lines[0].strip().replace('"', "'")
-        raw_keyword = lines[1].strip().lower() if len(lines) > 1 else "technology"
-        photo_keyword = "".join(x for x in raw_keyword if x.isalnum())
         
-        article_body = '\n'.join(lines[3:]).strip()
+        # 1. Заголовок (чистый)
+        ai_title = clean_content(lines[0])
+        
+        # 2. Ключевое слово для фото
+        raw_keyword = lines[1].strip().lower() if len(lines) > 1 else "tech"
+        photo_keyword = re.sub(r'[^a-zA-Z]', '', raw_keyword)
+        
+        # 3. Тело статьи (без картинки внутри!)
+        # Берем всё, что после 2-й строки и чистим
+        article_body = clean_content("\n".join(lines[2:]))
+
         timestamp = int(time.time())
         img_filename = f"img_{timestamp}.jpg"
         
         if download_image(photo_keyword, img_filename):
             final_image_url = f"/images/{img_filename}"
         else:
-            final_image_url = "https://loremflickr.com/1200/630/tech"
+            final_image_url = "https://loremflickr.com/1200/800/tech"
 
         post_filename = os.path.join(POSTS_DIR, f"post_{timestamp}.md")
         with open(post_filename, "w", encoding="utf-8") as f:
             f.write('---\n')
             f.write(f'title: "{ai_title}"\n')
             f.write(f'date: {datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")}\n')
-            f.write(f'image: "{final_image_url}"\n')
+            f.write(f'thumbnail: "{final_image_url}"\n') # Для главной страницы
+            f.write(f'image: "{final_image_url}"\n')     # Для шапки статьи
             f.write('draft: false\n')
             f.write('---\n\n')
-            f.write(f'![{ai_title}]({final_image_url})\n\n')
+            # Сразу пишем текст, без тега ![]()
             f.write(article_body)
             f.write(f"\n\n---\n*Source: [The Verge]({entry.link})*")
 
         mark_as_published(entry.link)
-        print(f"✅ Success: {post_filename}")
+        print(f"✅ Success: {ai_title}")
 
 if __name__ == "__main__":
     run_bot()
