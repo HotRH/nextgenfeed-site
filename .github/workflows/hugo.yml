@@ -4,11 +4,16 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 permissions:
   contents: read
   pages: write
   id-token: write
+
+# Глобальные переменные для исправления предупреждений Node.js
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build:
@@ -17,14 +22,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          submodules: false
+          # Включаем загрузку тем, если они подключены как субмодули
+          submodules: recursive
+          fetch-depth: 0
+
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v3
         with:
           hugo-version: 'latest'
           extended: true
-      - name: Build
-        run: hugo --minify
+
+      - name: Build with Hugo
+        # Добавляем флаг --gc для очистки кэша и подробный лог ошибок
+        run: hugo --minify --gc
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
