@@ -36,8 +36,11 @@ jobs:
           extended: true
 
       - name: Build with Hugo
-        # Добавляем флаг --gc для очистки кэша и подробный лог ошибок
-        run: hugo --minify --gc
+        run: |
+          hugo \
+            --minify \
+            --gc \
+            --buildFuture
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
