@@ -2,11 +2,10 @@ name: Deploy Hugo site to Pages
 
 on:
   schedule:
-    # Запуск каждые 30 минут
-    - cron: '*/30 * * * *'
+    - cron: '*/30 * * * *'  # Запуск каждые 30 минут
   push:
-    branches:
-      - main
+    branches: ["main"]
+    
   workflow_dispatch:
 
 permissions:
