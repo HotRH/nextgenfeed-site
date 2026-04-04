@@ -34,6 +34,7 @@ def get_full_text(url):
 
 def clean_text(text):
     text = re.sub(r'(?i)here is the.*?article:|rewritten version:|\[.*?line\]|as a journalist.*?:', '', text)
+    text = re.sub(r'(?i)follow.*?(twitter|x|threads|bluesky|instagram|facebook).*', '', text)
     return text.replace("**", "").replace("##", "").replace("`", "").strip()
 
 def is_trash(title):
@@ -61,6 +62,7 @@ def is_semantic_duplicate(new_title):
 def ask_ai(title, full_content):
     prompt = (
         f"Act as a Senior Technology Editor. Rewrite this news into a deep analysis (5+ paragraphs).\n"
+        f"IMPORTANT: DO NOT include any author names, bios, or 'Follow me' social media links.\n"
         f"Line 1: Catchy SEO Title. Line 2: Start article.\n"
         f"SOURCE: {title}\nCONTENT: {full_content[:5000]}"
     )
@@ -110,12 +112,10 @@ def run_bot():
         ai_title = clean_text(lines[0]).strip('"').replace('"', "'")
         body = clean_text("\n".join(lines[1:]))
 
-        # 1. Защита от ошибок генерации
         if "generation error" in body.lower() or "generation error" in ai_title.lower():
             print(f"⚠️ Error detected, skipping: {entry.title}")
             continue
 
-        # 2. Создаем SEO-описание (первые 160 символов текста без спецсимволов)
         seo_desc = re.sub(r'[\n\r\"\'*#]', ' ', body[:160]).strip() + "..."
 
         filename = os.path.join(POSTS_DIR, f"post_{int(last_time.timestamp())}.md")
@@ -123,6 +123,7 @@ def run_bot():
             f.write(f'---\n')
             f.write(f'title: "{ai_title}"\n')
             f.write(f'date: {last_time.strftime("%Y-%m-%dT%H:%M:%SZ")}\n')
+            f.write(f'lastmod: {last_time.strftime("%Y-%m-%dT%H:%M:%SZ")}\n') # <-- Идеальное SEO-время
             f.write(f'description: "{seo_desc}"\n')
             f.write(f'draft: false\n')
             f.write(f'---\n\n')
