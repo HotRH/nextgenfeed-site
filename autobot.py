@@ -6,8 +6,12 @@ from datetime import datetime, timedelta
 import re
 import trafilatura
 import random
+import requests
+import urllib.parse
 
 # --- КОНФИГУРАЦИЯ ---
+PIXABAY_KEY = "12478360-27bd55f31c4bdf8f739410ef4" # <--- Твой ключ от Pixabay
+
 RSS_SOURCES = [
     "https://www.theverge.com/rss/index.xml",
     "https://techcrunch.com/feed/",
@@ -58,6 +62,32 @@ def is_semantic_duplicate(new_title):
         result = subprocess.run(["ollama", "run", "llama3", prompt], capture_output=True, text=True, encoding="utf-8", timeout=60)
         return True if "YES" in result.stdout.strip().upper() else False
     except: return False
+
+def get_image_keyword(title):
+    """ИИ придумывает идеальный запрос для фотостока"""
+    prompt = f"Give me exactly TWO English keywords to find a stock photo for this tech news. DO NOT write sentences. JUST TWO WORDS.\nNews Title: {title}"
+    try:
+        result = subprocess.run(["ollama", "run", "llama3", prompt], capture_output=True, text=True, encoding="utf-8", timeout=60)
+        words = result.stdout.strip().replace('"', '').replace("Keywords:", "").strip()
+        return words
+    except:
+        return "technology"
+
+def get_pixabay_image(query):
+    """Ищет легальную картинку на Pixabay"""
+    if PIXABAY_KEY == "12478360-27bd55f31c4bdf8f739410ef4": return ""
+    
+    clean_query = urllib.parse.quote(query)
+    url = f"https://pixabay.com/api/?key={PIXABAY_KEY}&q={clean_query}&image_type=photo&orientation=horizontal&category=science&safesearch=true&per_page=3"
+    
+    try:
+        resp = requests.get(url, timeout=10)
+        data = resp.json()
+        if data.get('totalHits', 0) > 0:
+            return data['hits'][0]['largeImageURL']
+    except:
+        pass
+    return ""
 
 def ask_ai(title, full_content):
     prompt = (
@@ -117,14 +147,21 @@ def run_bot():
             continue
 
         seo_desc = re.sub(r'[\n\r\"\'*#]', ' ', body[:160]).strip() + "..."
+        
+        # МАГИЯ КАРТИНОК: ИИ думает -> Pixabay ищет
+        search_query = get_image_keyword(ai_title)
+        print(f"🔍 AI suggests image keywords: {search_query}")
+        image_url = get_pixabay_image(search_query)
 
         filename = os.path.join(POSTS_DIR, f"post_{int(last_time.timestamp())}.md")
         with open(filename, "w", encoding="utf-8") as f:
             f.write(f'---\n')
             f.write(f'title: "{ai_title}"\n')
             f.write(f'date: {last_time.strftime("%Y-%m-%dT%H:%M:%SZ")}\n')
-            f.write(f'lastmod: {last_time.strftime("%Y-%m-%dT%H:%M:%SZ")}\n') # <-- Идеальное SEO-время
+            f.write(f'lastmod: {last_time.strftime("%Y-%m-%dT%H:%M:%SZ")}\n')
             f.write(f'description: "{seo_desc}"\n')
+            if image_url:
+                f.write(f'thumbnail: "{image_url}"\n')
             f.write(f'draft: false\n')
             f.write(f'---\n\n')
             f.write(body + f"\n\n---\n*Source: {entry.link}*")
@@ -132,7 +169,7 @@ def run_bot():
         with open(DB_FILE, "a") as f: f.write(entry.link + "\n")
         with open(TITLES_FILE, "a", encoding="utf-8") as f: f.write(entry.title + "\n")
         
-        print(f"✅ Scheduled: {ai_title}")
+        print(f"✅ Scheduled: {ai_title} (🖼️ Image: {'Yes' if image_url else 'No'})")
 
 if __name__ == "__main__":
     run_bot()
