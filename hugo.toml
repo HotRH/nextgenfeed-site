@@ -10,7 +10,10 @@ enableRobotsTXT = true
 [params]
   highlightColor = "#1a5fb4" # Глубокий синий акцентный цвет
   readmore = true # Кнопка "Читать далее" для красивого превью
-
+  favicon = "images/favicon.png"
+[params.logo]
+  image = "images/logo.png"
+  title = "NextGenFeed"
 [[menu.main]]
 	name = "Home"
 	url = "/"
