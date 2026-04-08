@@ -10,12 +10,13 @@ enableRobotsTXT = true
 [params]
   highlightColor = "#1a5fb4" # Глубокий синий акцентный цвет
   readmore = true # Кнопка "Читать далее" для красивого превью
-  favicon = "images/favicon.png"
-  customCSS = ["css/custom.css"] # <--- ВОТ ЭТА СТРОЧКА ВКЛЮЧАЕТ МАГИЮ
-  favicon = "images/favicon.png"
+  customCSS = ["css/custom.css"] # Магия анимации
+  favicon = "images/favicon.png" # Иконка вкладки
+
 [params.logo]
   image = "images/logo.png"
   title = "NextGenFeed"
+
 [[menu.main]]
 	name = "Home"
 	url = "/"
