@@ -1,1 +1,13 @@
+/* Deep Tech Animated Gradient Background */
+body {
+    background: linear-gradient(270deg, #0b1426, #1a2a42, #0d1b2a) !important;
+    background-size: 400% 400% !important;
+    animation: DeepTechGlow 20s ease infinite !important;
+}
 
+/* Сама анимация (плавное смещение цветов) */
+@keyframes DeepTechGlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
