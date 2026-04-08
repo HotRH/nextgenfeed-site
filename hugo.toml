@@ -11,6 +11,8 @@ enableRobotsTXT = true
   highlightColor = "#1a5fb4" # Глубокий синий акцентный цвет
   readmore = true # Кнопка "Читать далее" для красивого превью
   favicon = "images/favicon.png"
+  customCSS = ["css/custom.css"] # <--- ВОТ ЭТА СТРОЧКА ВКЛЮЧАЕТ МАГИЮ
+  favicon = "images/favicon.png"
 [params.logo]
   image = "images/logo.png"
   title = "NextGenFeed"
