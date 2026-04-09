@@ -124,3 +124,6 @@ Dyson made a handheld version of its iconic fans
 The Moon is already on Google Maps—did Artemis II really tell us anything new?
 Conflicting Rulings Leave Anthropic in ‘Supply-Chain Risk’ Limbo
 As the Strait of Hormuz Reopens, Global Shipping Will Take Months to Recover
+WireGuard VPN developer can’t ship software updates after Microsoft locks account
+YouTube Shorts will use AI to make avatars that look and sound like you
+Gemini app rolling out ‘notebooks’ to organize chats & files, integrates with NotebookLM

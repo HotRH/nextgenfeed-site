@@ -140,3 +140,6 @@ https://www.theverge.com/tech/907802/dyson-hushjet-mini-cool-handheld-personal-f
 https://arstechnica.com/space/2026/04/the-moon-is-already-on-google-maps-did-artemis-ii-really-tell-us-anything-new/
 https://www.wired.com/story/anthropic-appeals-court-ruling/
 https://www.wired.com/story/the-strait-of-hormuz-reopens-but-global-shipping-will-take-months-to-recover/
+https://techcrunch.com/2026/04/08/wireguard-vpn-developer-cant-ship-software-updates-after-microsoft-locks-account/
+https://9to5google.com/2026/04/08/youtube-shorts-ai-avatar/
+https://9to5google.com/2026/04/08/gemini-app-notebooks/
