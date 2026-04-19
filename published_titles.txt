@@ -373,3 +373,4 @@ Gemini app bug removes features, reverts UI on Android
 What is happening with the Google Assistant? [Video]
 Tesla brings its robotaxi service to Dallas and Houston
 Samsung says Galaxy S26 vertical camera is a ‘core identity’ — it’s also a core problem
+The RAM shortage could last years
